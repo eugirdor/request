@@ -79,7 +79,13 @@ function connectionErrorHandler(error) {
       socket.res.emit('error', error)
     }
   } else {
-    socket._httpMessage.emit('error', error)
+    if (socket._httpMessage) {
+        socket._httpMessage.emit('error', error)
+    } else {
+        if (socket.listenerCount('error') > 0) {
+            socket.emit('error', error)
+        }
+    }
   }
 }
 
@@ -1229,10 +1235,10 @@ Request.prototype.aws = function (opts, now) {
     self._aws = opts
     return self
   }
-  
+
   if (opts.sign_version == 4 || opts.sign_version == '4') {
     var aws4 = require('aws4')
-    // use aws4  
+    // use aws4
     var options = {
       host: self.uri.host,
       path: self.uri.path,
